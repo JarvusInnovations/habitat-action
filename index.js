@@ -4,7 +4,7 @@ const io = require('@actions/io');
 
 
 // gather input
-const deps = core.getInput('deps') || '';
+const deps = (core.getInput('deps') || '').split(/\s+/);
 
 
 // run with error wrapper
@@ -59,9 +59,17 @@ async function run() {
 
 
     // install deps
-    console.log('deps: '+JSON.stringify(deps));
-    const depsParsed = deps.split(/\s+/);
-    console.log('depsParsed: '+JSON.stringify(depsParsed));
+    if (deps.length) {
+        try {
+            core.startGroup(`Installing deps: ${deps.join(' ')}`);
+            await exec('hab pkg install', deps);
+        } catch (err) {
+            core.setFailed(`Failed to install deps: ${err.message}`);
+            return;
+        } finally {
+            core.endGroup();
+        }
+    }
 }
 
 async function execOutput(commandLine, args = [], options = {}) {
