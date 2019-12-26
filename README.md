@@ -14,7 +14,7 @@ on:
     branches:
       - master
 jobs:
-  tmate-debug:
+  habitat-build:
     runs-on: ubuntu-latest
     steps:
     - name: 'Initialize Chef Habitat environment'
