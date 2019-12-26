@@ -16,7 +16,7 @@ try {
 
 async function run() {
     core.exportVariable('HAB_NONINTERACTIVE', 'true');
-    core.exportVariable('STUDIO_TYPE', 'github-runner');
+    core.exportVariable('STUDIO_TYPE', 'bare');
 
     if (await io.which('hab')) {
         console.log('Chef Habitat already installed!');
