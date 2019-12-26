@@ -16,7 +16,7 @@ try {
 
 async function run() {
     core.exportVariable('HAB_NONINTERACTIVE', 'true');
-    core.exportVariable('STUDIO_TYPE', 'bare');
+    core.exportVariable('STUDIO_TYPE', 'default');
 
 
 
