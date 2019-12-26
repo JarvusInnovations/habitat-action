@@ -17,8 +17,6 @@ try {
 async function run() {
     core.exportVariable('HAB_NONINTERACTIVE', 'true');
     core.exportVariable('STUDIO_TYPE', 'bare');
-    core.exportVariable('HAB_CACHE_KEY_PATH', '/hab/cache/keys');
-    core.exportVariable('ARTIFACT_PATH', '/hab/cache/artifacts');
 
 
 
@@ -47,6 +45,18 @@ async function run() {
         await exec('sudo chown runner:docker -R /hab');
     } catch (err) {
         core.setFailed(`Failed to change /hab ownership: ${err.message}`);
+        return;
+    } finally {
+        core.endGroup();
+    }
+
+
+    // link user cache directory to global
+    try {
+        core.startGroup('Linking ~/.hab/cache to /hab/cache');
+        await exec('ln -sf /hab/cache ~/.hab/');
+    } catch (err) {
+        core.setFailed(`Failed to link ~/.hab/cache: ${err.message}`);
         return;
     } finally {
         core.endGroup();
