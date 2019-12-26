@@ -51,24 +51,25 @@ async function run() {
     }
 
 
-    // link user cache directory to global
-    try {
-        core.startGroup('Linking ~/.hab/cache to /hab/cache');
-        await exec('ln -sf /hab/cache ~/.hab/');
-    } catch (err) {
-        core.setFailed(`Failed to link ~/.hab/cache: ${err.message}`);
-        return;
-    } finally {
-        core.endGroup();
-    }
-
-
     // verify installation (and initialize license)
     try {
         await exec('hab --version');
     } catch (err) {
         core.setFailed(`Failed to verify hab installation: ${err.message}`);
         return;
+    }
+
+
+    // link user cache directory to global
+    try {
+        core.startGroup('Linking ~/.hab/cache to /hab/cache');
+        await exec('mkdir ~/.hab');
+        await exec('ln -sf /hab/cache ~/.hab/');
+    } catch (err) {
+        core.setFailed(`Failed to link ~/.hab/cache: ${err.message}`);
+        return;
+    } finally {
+        core.endGroup();
     }
 
 
