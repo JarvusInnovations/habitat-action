@@ -24,6 +24,7 @@ jobs:
       with:
         deps: |
           core/git
+          core/hab-studio
     - run: hab pkg exec core/git git clone https://github.com/JarvusInnovations/habitat-compose
     - run: hab origin key generate jarvus
     - run: hab pkg build ./habitat-compose/
