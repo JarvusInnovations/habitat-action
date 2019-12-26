@@ -17,6 +17,10 @@ try {
 async function run() {
     core.exportVariable('HAB_NONINTERACTIVE', 'true');
     core.exportVariable('STUDIO_TYPE', 'bare');
+    core.exportVariable('HAB_CACHE_KEY_PATH', '/hab/cache/keys');
+    core.exportVariable('ARTIFACT_PATH', '/hab/cache/artifacts');
+
+
 
     if (await io.which('hab')) {
         console.log('Chef Habitat already installed!');
