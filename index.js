@@ -48,6 +48,14 @@ async function run() {
         core.endGroup();
     }
 
+
+    // verify installation (and initialize license)
+    try {
+        console.log(`Installed: ${await execOutput('hab --version')}`);
+    } catch (err) {
+        core.setFailed(`Failed to verify hab installation: ${err.message}`);
+        return;
+    }
 }
 
 async function execOutput(commandLine, args = [], options = {}) {
