@@ -63,8 +63,8 @@ async function run() {
     // link user cache directory to global
     try {
         core.startGroup('Linking ~/.hab/cache to /hab/cache');
-        await exec('mkdir "${HOME}/.hab"');
-        await exec('ln -sf /hab/cache "${HOME}/.hab/"');
+        await exec(`mkdir "${process.env.HOME}/.hab"`);
+        await exec(`ln -sf /hab/cache "${process.env.HOME}/.hab/"`);
     } catch (err) {
         core.setFailed(`Failed to link ~/.hab/cache: ${err.message}`);
         return;
