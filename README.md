@@ -1,3 +1,3 @@
 # habitat-action
 
-A GitHub action that turns your workflow runner into a Chef Habitat studio
+A GitHub action that sets up your workflow runner to use Chef Habitat

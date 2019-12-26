@@ -1,7 +1,7 @@
 {
   "name": "habitat-action",
   "version": "1.0.0",
-  "description": "A GitHub action that turns your workflow runner into a Chef Habitat studio",
+  "description": "A GitHub action that sets up your workflow runner to use Chef Habitat",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
