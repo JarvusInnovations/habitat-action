@@ -1,0 +1,64 @@
+const core = require('@actions/core');
+const { exec } = require('@actions/exec');
+const io = require('@actions/io');
+
+
+// gather input
+const deps = core.getInput('deps');
+
+
+// run with error wrapper
+try {
+    run();
+} catch(err) {
+    core.setFailed(err.message);
+}
+
+async function run() {
+    core.exportVariable('HAB_NONINTERACTIVE', 'true');
+
+    if (await io.which('hab')) {
+        console.log('Chef Habitat already installed!');
+        return;
+    }
+
+    // install hab binary and bootstrap /hab environment
+    try {
+        core.startGroup('Installing Chef Habitat');
+        await exec('wget https://raw.githubusercontent.com/habitat-sh/habitat/master/components/hab/install.sh -O /tmp/hab-install.sh');
+        await exec('sudo bash /tmp/hab-install.sh');
+        await io.rmRF('/tmp/hab-install.sh');
+    } catch (err) {
+        core.setFailed(`Failed to install Chef Habitat: ${err.message}`);
+        return;
+    } finally {
+        core.endGroup();
+    }
+
+
+    // reconfigure ownership so that `hab pkg install` works without sudo
+    try {
+        core.startGroup('Changing /hab ownership to runner user');
+        await exec('sudo chown runner:docker -R /hab');
+    } catch (err) {
+        core.setFailed(`Failed to change /hab ownership: ${err.message}`);
+        return;
+    } finally {
+        core.endGroup();
+    }
+
+}
+
+async function execOutput(commandLine, args = [], options = {}) {
+    let stdout = '';
+
+    await exec(commandLine, args, {
+        ...options,
+        listeners: {
+            ...options.listeners,
+            stdout: buffer => stdout += buffer
+        }
+    });
+
+    return stdout.trim();
+}
