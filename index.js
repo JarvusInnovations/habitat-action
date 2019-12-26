@@ -4,7 +4,7 @@ const io = require('@actions/io');
 
 
 // gather input
-const deps = core.getInput('deps');
+const deps = core.getInput('deps') || '';
 
 
 // run with error wrapper
@@ -56,6 +56,12 @@ async function run() {
         core.setFailed(`Failed to verify hab installation: ${err.message}`);
         return;
     }
+
+
+    // install deps
+    console.log('deps: '+JSON.stringify(deps));
+    const depsParsed = deps.split(/\s+/);
+    console.log('depsParsed: '+JSON.stringify(depsParsed));
 }
 
 async function execOutput(commandLine, args = [], options = {}) {
