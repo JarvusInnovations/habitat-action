@@ -25,6 +25,10 @@ jobs:
         deps: |
           core/git
           core/hab-studio
+        # supervisor: true
+        supervisor: |
+          core/mysql
+          emergence/nginx
     - run: hab pkg exec core/git git clone https://github.com/JarvusInnovations/habitat-compose
     - run: hab origin key generate jarvus
     - run: hab pkg build ./habitat-compose/

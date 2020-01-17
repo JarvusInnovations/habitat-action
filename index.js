@@ -5,6 +5,13 @@ const io = require('@actions/io');
 
 // gather input
 const deps = (core.getInput('deps') || '').split(/\s+/).filter(pkg => Boolean(pkg));
+const supervisor = core.getInput('supervisor') == 'true'
+    ? true
+    : (
+        !core.getInput('supervisor')
+        ? false
+        : core.getInput('supervisor').split(/\s+/).filter(svc => Boolean(svc))
+    );
 
 
 // run with error wrapper
@@ -18,6 +25,11 @@ async function run() {
     core.exportVariable('HAB_NONINTERACTIVE', 'true');
     core.exportVariable('STUDIO_TYPE', 'default');
 
+
+    const habEnv = {
+        HAB_NONINTERACTIVE: 'true', // not effective for hab svc load output pending https://github.com/habitat-sh/habitat/issues/6260
+        ...process.env
+    };
 
 
     if (await io.which('hab')) {
@@ -77,12 +89,52 @@ async function run() {
     if (deps.length) {
         try {
             core.startGroup(`Installing deps: ${deps.join(' ')}`);
-            await exec('hab pkg install', deps);
+            await exec('hab pkg install', deps, { env: habEnv });
         } catch (err) {
             core.setFailed(`Failed to install deps: ${err.message}`);
             return;
         } finally {
             core.endGroup();
+        }
+    }
+
+
+    // start supervisor
+    if (supervisor) {
+        try {
+            core.startGroup('Starting supervisor');
+            await exec('mkdir -p /hab/sup/default');
+            await exec('bash', ['-c', 'setsid sudo hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
+
+            core.info('Waiting for supervisor...');
+            await exec('bash', ['-c', 'until sudo hab svc status 2>/dev/null >/dev/null; do echo -n "."; sleep .1; done; echo']);
+
+            core.info('Enabling non-sudo access to supervisor API...');
+            await exec('sudo chgrp docker /hab/sup/default/CTL_SECRET');
+            await exec('sudo chmod g+r /hab/sup/default/CTL_SECRET');
+
+            core.info('Setting up hab user...');
+            await exec('sudo groupadd hab');
+            await exec('sudo useradd -g hab hab');
+        } catch (err) {
+            core.setFailed(`Failed to start supervisor: ${err.message}`);
+            return;
+        } finally {
+            core.endGroup();
+        }
+
+        if (Array.isArray(supervisor)) {
+            for (const svc of supervisor) {
+                try {
+                    core.startGroup(`Loading service: ${svc}`);
+                    await exec('hab svc load', [svc], { env: habEnv });
+                } catch (err) {
+                    core.setFailed(`Failed to load service: ${err.message}`);
+                    return;
+                } finally {
+                    core.endGroup();
+                }
+            }
         }
     }
 }
