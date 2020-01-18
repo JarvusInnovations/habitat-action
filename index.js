@@ -33,55 +33,54 @@ async function run() {
 
 
     if (await io.which('hab')) {
-        console.log('Chef Habitat already installed!');
-        return;
-    }
-
-    // install hab binary and bootstrap /hab environment
-    try {
-        core.startGroup('Installing Chef Habitat');
-        await exec('wget https://raw.githubusercontent.com/habitat-sh/habitat/master/components/hab/install.sh -O /tmp/hab-install.sh');
-        await exec('sudo bash /tmp/hab-install.sh');
-        await io.rmRF('/tmp/hab-install.sh');
-    } catch (err) {
-        core.setFailed(`Failed to install Chef Habitat: ${err.message}`);
-        return;
-    } finally {
-        core.endGroup();
-    }
+        core.info('Chef Habitat already installed!');
+    } else {
+        // install hab binary and bootstrap /hab environment
+        try {
+            core.startGroup('Installing Chef Habitat');
+            await exec('wget https://raw.githubusercontent.com/habitat-sh/habitat/master/components/hab/install.sh -O /tmp/hab-install.sh');
+            await exec('sudo bash /tmp/hab-install.sh');
+            await io.rmRF('/tmp/hab-install.sh');
+        } catch (err) {
+            core.setFailed(`Failed to install Chef Habitat: ${err.message}`);
+            return;
+        } finally {
+            core.endGroup();
+        }
 
 
-    // reconfigure ownership so that `hab pkg install` works without sudo
-    try {
-        core.startGroup('Changing /hab ownership to runner user');
-        await exec('sudo chown runner:docker -R /hab');
-    } catch (err) {
-        core.setFailed(`Failed to change /hab ownership: ${err.message}`);
-        return;
-    } finally {
-        core.endGroup();
-    }
+        // reconfigure ownership so that `hab pkg install` works without sudo
+        try {
+            core.startGroup('Changing /hab ownership to runner user');
+            await exec('sudo chown runner:docker -R /hab');
+        } catch (err) {
+            core.setFailed(`Failed to change /hab ownership: ${err.message}`);
+            return;
+        } finally {
+            core.endGroup();
+        }
 
 
-    // verify installation (and initialize license)
-    try {
-        await exec('hab --version');
-    } catch (err) {
-        core.setFailed(`Failed to verify hab installation: ${err.message}`);
-        return;
-    }
+        // verify installation (and initialize license)
+        try {
+            await exec('hab --version');
+        } catch (err) {
+            core.setFailed(`Failed to verify hab installation: ${err.message}`);
+            return;
+        }
 
 
-    // link user cache directory to global
-    try {
-        core.startGroup('Linking ~/.hab/cache to /hab/cache');
-        await exec(`mkdir -p "${process.env.HOME}/.hab"`);
-        await exec(`ln -sf /hab/cache "${process.env.HOME}/.hab/"`);
-    } catch (err) {
-        core.setFailed(`Failed to link ~/.hab/cache: ${err.message}`);
-        return;
-    } finally {
-        core.endGroup();
+        // link user cache directory to global
+        try {
+            core.startGroup('Linking ~/.hab/cache to /hab/cache');
+            await exec(`mkdir -p "${process.env.HOME}/.hab"`);
+            await exec(`ln -sf /hab/cache "${process.env.HOME}/.hab/"`);
+        } catch (err) {
+            core.setFailed(`Failed to link ~/.hab/cache: ${err.message}`);
+            return;
+        } finally {
+            core.endGroup();
+        }
     }
 
 
