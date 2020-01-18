@@ -17,6 +17,15 @@ jobs:
   habitat-build:
     runs-on: ubuntu-latest
     steps:
+    - name: Initialize Chef Habitat artifacts cache directory
+      run: |
+        sudo mkdir -p /hab/cache/artifacts
+        sudo chown runner:docker -R /hab
+    - name: Cache Chef Habitat artifacts
+      uses: actions/cache@v1
+      with:
+        path: /hab/cache/artifacts
+        key: hab-cache-artifacts
     - name: 'Initialize Chef Habitat environment'
       uses: JarvusInnovations/habitat-action@master
       env:
