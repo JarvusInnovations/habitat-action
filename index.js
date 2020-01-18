@@ -10,7 +10,7 @@ const supervisor = core.getInput('supervisor') == 'true'
     : (
         !core.getInput('supervisor')
         ? false
-        : core.getInput('supervisor').split(/\s+/).filter(svc => Boolean(svc))
+        : core.getInput('supervisor').trim().split(/\s*\n\s*/).filter(svc => Boolean(svc))
     );
 
 
@@ -126,7 +126,7 @@ async function run() {
             for (const svc of supervisor) {
                 try {
                     core.startGroup(`Loading service: ${svc}`);
-                    await exec('hab svc load', [svc], { env: habEnv });
+                    await exec(`hab svc load ${svc}`, [], { env: habEnv });
                 } catch (err) {
                     core.setFailed(`Failed to load service: ${err.message}`);
                     return;
