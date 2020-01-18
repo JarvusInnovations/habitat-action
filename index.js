@@ -103,7 +103,7 @@ async function run() {
         try {
             core.startGroup('Starting supervisor');
             await exec('mkdir -p /hab/sup/default');
-            await exec('bash', ['-c', 'setsid sudo hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
+            await exec('bash', ['-c', 'setsid sudo --preserve-env hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
             core.info('Waiting for supervisor...');
             await exec('bash', ['-c', 'until sudo hab svc status 2>/dev/null >/dev/null; do echo -n "."; sleep .1; done; echo']);
