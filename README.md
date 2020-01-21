@@ -84,7 +84,3 @@ async function run() {
     // ...
 }
 ```
-
-## Roadmap
-
-- [ ] Replicate how [cypress-io/github-action uses actions/cache fork](https://github.com/cypress-io/github-action/blob/master/index.js#L7) to automatically cache /hab/cache/artifacts
