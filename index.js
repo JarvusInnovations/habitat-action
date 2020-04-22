@@ -135,6 +135,9 @@ async function run() {
                 }
             }
         }
+
+        core.info('Fixing permissions for any packages installed by supervisor...');
+        await exec('sudo chown runner:docker -R /hab/pkgs');
     }
 }
 
