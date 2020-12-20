@@ -90,6 +90,10 @@ async function run() {
         core.startGroup(`Restoring package cache`);
         const cacheKey = await cache.restoreCache(['/hab/pkgs'], 'hab-pkgs');
         core.info(cacheKey ? `Restored cache ${cacheKey}` : 'No cache restored');
+
+        // .cached file is written at beginning of caching, and removed after restore to
+        // guard against multiple post scripts trying to save the same cache
+        await exec('rm -v /hab/pkgs/.cached');
     } catch (err) {
         core.setFailed(`Failed to restore package cache: ${err.message}`);
         return;
