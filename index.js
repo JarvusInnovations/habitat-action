@@ -2,6 +2,10 @@ const core = require('@actions/core');
 const { exec } = require('@actions/exec');
 const io = require('@actions/io');
 const cache = require('@actions/cache');
+const fs = require('fs');
+
+
+const CACHE_LOCK_PATH = '/hab/pkgs/.cached';
 
 
 // gather input
@@ -93,7 +97,9 @@ async function run() {
 
         // .cached file is written at beginning of caching, and removed after restore to
         // guard against multiple post scripts trying to save the same cache
-        await exec('rm -v /hab/pkgs/.cached');
+        if (fs.existsSync(CACHE_LOCK_PATH)) {
+            await exec(`rm -v "${CACHE_LOCK_PATH}"`);
+        }
     } catch (err) {
         core.setFailed(`Failed to restore package cache: ${err.message}`);
         return;
