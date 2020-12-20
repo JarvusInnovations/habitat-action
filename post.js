@@ -23,8 +23,13 @@ async function run() {
     } else {
         try {
             core.startGroup(`Saving package cache`);
+
+            core.info(`Writing cache lock: ${CACHE_LOCK_PATH}`);
             fs.writeFileSync(CACHE_LOCK_PATH, '');
+
+            core.info('Calling saveCache...');
             const cacheId = await cache.saveCache(['/hab/pkgs'], 'hab-pkgs');
+
             core.info(cacheId ? `Saved cache ${cacheId}` : 'No cache saved');
         } catch (err) {
             core.setFailed(`Failed to save package cache: ${err.message}`);
