@@ -92,12 +92,16 @@ async function run() {
     // restore cache
     try {
         core.startGroup(`Restoring package cache`);
+
+        console.info('Calling restoreCache...')
         const cacheKey = await cache.restoreCache(['/hab/pkgs'], 'hab-pkgs');
+
         core.info(cacheKey ? `Restored cache ${cacheKey}` : 'No cache restored');
 
         // .cached file is written at beginning of caching, and removed after restore to
         // guard against multiple post scripts trying to save the same cache
         if (fs.existsSync(CACHE_LOCK_PATH)) {
+            core.info(`Erasing cache lock: ${CACHE_LOCK_PATH}`);
             await exec(`rm -v "${CACHE_LOCK_PATH}"`);
         }
     } catch (err) {
