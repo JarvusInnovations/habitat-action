@@ -146,7 +146,7 @@ async function run() {
             await exec('bash', ['-c', 'setsid sudo --preserve-env hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
             core.info('Waiting for supervisor...');
-            await exec('bash', ['-c', 'until sudo hab svc status 2>/dev/null >/dev/null; do echo -n "."; sleep .1; done; echo']);
+            await exec('bash', ['-c', 'until sudo hab svc status; do echo -n "."; sleep .1; done; echo']);
 
             core.info('Enabling non-sudo access to supervisor API...');
             await exec('sudo chgrp docker /hab/sup/default/CTL_SECRET');
