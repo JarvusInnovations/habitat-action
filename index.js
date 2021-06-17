@@ -5,8 +5,8 @@ const cache = require('@actions/cache');
 const fs = require('fs');
 
 
-const CACHE_LOCK_PATH = '/hab/pkgs/.cached';
-const RESTORE_LOCK_PATH = '/hab/pkgs/.restored';
+const CACHE_LOCK_PATH = '/hab/cache/artifacts/.cached';
+const RESTORE_LOCK_PATH = '/hab/cache/artifacts/.restored';
 
 
 // gather input
@@ -18,7 +18,7 @@ const supervisor = core.getInput('supervisor') == 'true'
         ? false
         : core.getInput('supervisor').trim().split(/\s*\n\s*/).filter(svc => Boolean(svc))
     );
-const cacheKey = core.getInput('cache-key') || `${process.env.GITHUB_WORKFLOW}:/hab/pkgs`;
+const cacheKey = core.getInput('cache-key') || `${process.env.GITHUB_WORKFLOW}:/hab/cache/artifacts`;
 
 
 // run with error wrapper
@@ -102,7 +102,7 @@ async function run() {
             fs.writeFileSync(RESTORE_LOCK_PATH, '');
 
             console.info(`Calling restoreCache: ${cacheKey}`);
-            const restoredCache = await cache.restoreCache(['/hab/pkgs'], cacheKey);
+            const restoredCache = await cache.restoreCache(['/hab/cache/artifacts'], cacheKey);
 
             core.info(restoredCache ? `Restored cache ${restoredCache}` : 'No cache restored');
 
