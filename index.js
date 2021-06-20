@@ -59,6 +59,8 @@ async function run() {
         // enable `hab pkg install` without sudo
         try {
             core.startGroup('Enabling sudoless package installation');
+            await exec('sudo mkdir -p /hab/cache/artifacts');
+            await exec('sudo chown runner:docker /hab/cache/artifacts');
             await exec('sudo chmod go+Xrw -R /hab/pkgs /hab/cache');
         } catch (err) {
             core.setFailed(`Failed to enable sudoless package installation: ${err.message}`);
