@@ -60,6 +60,7 @@ async function run() {
         try {
             core.startGroup('Changing /hab ownership to runner user');
             await exec('sudo chown runner:docker -R /hab');
+            await exec('sudo chmod g+w -R /hab');
         } catch (err) {
             core.setFailed(`Failed to change /hab ownership: ${err.message}`);
             return;
@@ -154,7 +155,7 @@ async function run() {
 
             core.info('Setting up hab user...');
             await exec('sudo groupadd hab');
-            await exec('sudo useradd -g hab hab');
+            await exec('sudo useradd -g hab -G docker hab');
         } catch (err) {
             core.setFailed(`Failed to start supervisor: ${err.message}`);
             return;
