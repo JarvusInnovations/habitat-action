@@ -58,12 +58,10 @@ async function run() {
 
         // enable `hab pkg install` without sudo
         try {
-            core.startGroup('Enabling sudoless package installation');
-            await exec('sudo mkdir -p /hab/cache/artifacts');
-            await exec('sudo chown runner:docker /hab/cache/artifacts');
-            await exec('sudo chmod go+Xrw -R /hab/pkgs /hab/cache');
+            core.startGroup('Enabling setuid and setgid for hab command');
+            await exec('sudo chmod ug+s /usr/bin/hab');
         } catch (err) {
-            core.setFailed(`Failed to enable sudoless package installation: ${err.message}`);
+            core.setFailed(`Failed to enable setuid and setgid for hab command: ${err.message}`);
             return;
         } finally {
             core.endGroup();
@@ -130,7 +128,7 @@ async function run() {
     if (deps.length) {
         try {
             core.startGroup(`Installing deps: ${deps.join(' ')}`);
-            await exec('sudo --preserve-env=HAB_LICENSE hab pkg install', deps, { env: habEnv });
+            await exec('hab pkg install', deps, { env: habEnv });
         } catch (err) {
             core.setFailed(`Failed to install deps: ${err.message}`);
             return;
@@ -151,11 +149,7 @@ async function run() {
             await exec('sudo --preserve-env bash', ['-c', 'mkdir -p /hab/sup/default && setsid hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
             core.info('Waiting for supervisor...');
-            await exec('bash', ['-c', 'until sudo --preserve-env=HAB_LICENSE hab svc status; do echo -n "."; sleep .1; done; echo']);
-
-            core.info('Enabling non-sudo access to supervisor API...');
-            await exec('sudo chgrp docker /hab/sup/default/CTL_SECRET');
-            await exec('sudo chmod g+r /hab/sup/default/CTL_SECRET');
+            await exec('bash', ['-c', 'until hab svc status; do echo -n "."; sleep .1; done; echo']);
         } catch (err) {
             core.setFailed(`Failed to start supervisor: ${err.message}`);
             return;
