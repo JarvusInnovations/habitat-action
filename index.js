@@ -98,6 +98,10 @@ async function run() {
         try {
             core.startGroup(`Restoring package cache`);
 
+            core.info(`Initializing runner-writable /hab/cache/artifacts`);
+            await exec(`sudo mkdir -p /hab/cache/artifacts`);
+            await exec(`sudo chmod ugo+w /hab/cache/artifacts`);
+
             core.info(`Writing restore lock: ${RESTORE_LOCK_PATH}`);
             fs.writeFileSync(RESTORE_LOCK_PATH, '');
 
