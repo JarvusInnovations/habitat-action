@@ -58,9 +58,9 @@ async function run() {
 
         // reconfigure ownership so that `hab pkg install` works without sudo
         try {
-            core.startGroup('Changing /hab ownership to runner user');
-            await exec('sudo chown runner:docker -R /hab/pkgs');
-            await exec('sudo chmod g+w -R /hab/pkgs');
+            core.startGroup('Changing /hab/{pkgs,cache} ownership to runner user');
+            await exec('sudo chown runner:docker -R /hab/{pkgs,cache}');
+            await exec('sudo chmod g+w -R /hab/{pkgs,cache}');
         } catch (err) {
             core.setFailed(`Failed to change /hab ownership: ${err.message}`);
             return;
