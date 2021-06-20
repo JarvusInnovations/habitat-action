@@ -144,7 +144,7 @@ async function run() {
     if (supervisor) {
         try {
             core.startGroup('Starting supervisor');
-            await exec('mkdir -p /hab/sup/default');
+            await exec('sudo mkdir -p /hab/sup/default');
             await exec('bash', ['-c', 'setsid sudo --preserve-env=HAB_LICENSE hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
             core.info('Waiting for supervisor...');
