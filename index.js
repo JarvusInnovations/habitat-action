@@ -56,20 +56,6 @@ async function run() {
         }
 
 
-        // reconfigure ownership so that `hab pkg install` works without sudo
-        try {
-            core.startGroup('Changing /hab/{pkgs,cache,svc} ownership to runner user');
-            await exec('sudo mkdir /hab/svc');
-            await exec('sudo chown runner:docker -R /hab/pkgs /hab/cache /hab/svc');
-            await exec('sudo chmod g+w -R /hab/pkgs /hab/cache /hab/svc');
-        } catch (err) {
-            core.setFailed(`Failed to change /hab/{pkgs,cache,svc} ownership: ${err.message}`);
-            return;
-        } finally {
-            core.endGroup();
-        }
-
-
         // verify installation (and initialize license)
         try {
             await exec('hab --version');
@@ -130,7 +116,7 @@ async function run() {
     if (deps.length) {
         try {
             core.startGroup(`Installing deps: ${deps.join(' ')}`);
-            await exec('hab pkg install', deps, { env: habEnv });
+            await exec('sudo hab pkg install', deps, { env: habEnv });
         } catch (err) {
             core.setFailed(`Failed to install deps: ${err.message}`);
             return;
@@ -144,10 +130,7 @@ async function run() {
     if (supervisor) {
         try {
             core.startGroup('Starting supervisor');
-            await exec('sudo mkdir -p /hab/sup/default');
-            await exec('sudo touch /hab/sup/default/sup.log');
-            await exec('sudo chown runner:docker /hab/sup/default/sup.log');
-            await exec('bash', ['-c', 'setsid sudo --preserve-env=HAB_LICENSE hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
+            await exec('sudo --preserve-env bash', ['-c', 'mkdir -p /hab/sup/default && setsid hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
             core.info('Waiting for supervisor...');
             await exec('bash', ['-c', 'until sudo --preserve-env=HAB_LICENSE hab svc status; do echo -n "."; sleep .1; done; echo']);
@@ -179,9 +162,6 @@ async function run() {
                 }
             }
         }
-
-        core.info('Fixing permissions for any packages installed by supervisor...');
-        await exec('sudo chown runner:docker -R /hab/pkgs');
     }
 }
 
