@@ -56,6 +56,18 @@ async function run() {
         }
 
 
+        // enable `hab pkg install` without sudo
+        try {
+            core.startGroup('Enabling sudoless package installation');
+            await exec('sudo chmod go+Xrw -R /hab/pkgs /hab/cache');
+        } catch (err) {
+            core.setFailed(`Failed to enable sudoless package installation: ${err.message}`);
+            return;
+        } finally {
+            core.endGroup();
+        }
+
+
         // verify installation (and initialize license)
         try {
             await exec('hab --version');
