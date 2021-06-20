@@ -56,6 +56,20 @@ async function run() {
         }
 
 
+        // create hab user and group
+        try {
+            core.startGroup('Creating hab user');
+            await exec('sudo groupadd hab');
+            await exec('sudo useradd -g hab -G docker hab');
+            await io.rmRF('/tmp/hab-install.sh');
+        } catch (err) {
+            core.setFailed(`Failed to create hab user: ${err.message}`);
+            return;
+        } finally {
+            core.endGroup();
+        }
+
+
         // enable `hab pkg install` without sudo
         try {
             core.startGroup('Enabling setuid and setgid for hab command');
@@ -145,10 +159,6 @@ async function run() {
     // start supervisor
     if (supervisor) {
         try {
-            core.info('Setting up hab user...');
-            await exec('sudo groupadd hab');
-            await exec('sudo useradd -g hab -G docker hab');
-
             core.startGroup('Starting supervisor');
             await exec('sudo --preserve-env bash', ['-c', 'mkdir -p /hab/sup/default && setsid hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
