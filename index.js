@@ -143,6 +143,10 @@ async function run() {
     // start supervisor
     if (supervisor) {
         try {
+            core.info('Setting up hab user...');
+            await exec('sudo groupadd hab');
+            await exec('sudo useradd -g hab -G docker hab');
+
             core.startGroup('Starting supervisor');
             await exec('sudo --preserve-env bash', ['-c', 'mkdir -p /hab/sup/default && setsid hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
@@ -152,10 +156,6 @@ async function run() {
             core.info('Enabling non-sudo access to supervisor API...');
             await exec('sudo chgrp docker /hab/sup/default/CTL_SECRET');
             await exec('sudo chmod g+r /hab/sup/default/CTL_SECRET');
-
-            core.info('Setting up hab user...');
-            await exec('sudo groupadd hab');
-            await exec('sudo useradd -g hab -G docker hab');
         } catch (err) {
             core.setFailed(`Failed to start supervisor: ${err.message}`);
             return;
