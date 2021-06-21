@@ -8,7 +8,7 @@ const CACHE_LOCK_PATH = '/hab/cache/artifacts/.cached';
 
 
 // gather input
-const cacheKey = core.getInput('cache-key') || `${process.env.GITHUB_WORKFLOW}:/hab/cache/artifacts`;
+const cacheKey = core.getInput('cache-key') || `hab-artifacts-cache:${process.env.GITHUB_WORKFLOW}`;
 
 
 // run with error wrapper
