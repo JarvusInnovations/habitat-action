@@ -166,12 +166,15 @@ async function run() {
             await exec(`sudo mkdir -p /hab/sup/default`);
             await exec('sudo --preserve-env setsid bash', ['-c', 'hab sup run > /hab/sup/default/sup.log 2>&1 &'], { env: habEnv });
 
-            core.info('Waiting for supervisor...');
-            await exec('bash', ['-c', 'until hab svc status; do echo -n "."; sleep .1; done; echo']);
+            core.info('Waiting for supervisor secret...');
+            await exec('bash', ['-c', 'until test -f /hab/sup/default/CTL_SECRET; do echo -n "."; sleep .1; done; echo']);
 
             core.info('Enabling sudoless access to supervisor API...');
             await exec('sudo chgrp docker /hab/sup/default/CTL_SECRET');
             await exec('sudo chmod g+r /hab/sup/default/CTL_SECRET');
+
+            core.info('Waiting for supervisor...');
+            await exec('bash', ['-c', 'until hab svc status; do echo -n "."; sleep .1; done; echo']);
         } catch (err) {
             core.setFailed(`Failed to start supervisor: ${err.message}`);
             return;
