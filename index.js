@@ -77,7 +77,7 @@ async function run() {
             core.info(`Changing /hab ownership`);
             await exec(`sudo chown -R runner:docker /hab`);
             await exec(`sudo chmod g+s /hab /hab/cache /hab/pkgs`);
-            await exec(`find /hab/pkgs/ -maxdepth 3 -type d -exec sudo chmod g+s {} \;`);
+            await exec(`find /hab/pkgs/ -maxdepth 3 -type d -exec sudo chmod g+ws {} \;`);
 
             core.info(`Enabling setuid and setgid for hab command`);
             await exec('sudo chown root:root /usr/bin/hab');
