@@ -168,6 +168,10 @@ async function run() {
 
             core.info('Waiting for supervisor...');
             await exec('bash', ['-c', 'until hab svc status; do echo -n "."; sleep .1; done; echo']);
+
+            core.info('Enabling sudoless access to supervisor API...');
+            await exec('sudo chgrp docker /hab/sup/default/CTL_SECRET');
+            await exec('sudo chmod g+r /hab/sup/default/CTL_SECRET');
         } catch (err) {
             core.setFailed(`Failed to start supervisor: ${err.message}`);
             return;
