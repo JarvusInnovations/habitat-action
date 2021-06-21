@@ -147,7 +147,7 @@ async function run() {
     if (deps.length) {
         try {
             core.startGroup(`Installing deps: ${deps.join(' ')}`);
-            await exec('sudo hab pkg install', deps, { env: habEnv });
+            await exec('sudo --preserve-env hab pkg install', deps, { env: habEnv });
         } catch (err) {
             core.setFailed(`Failed to install deps: ${err.message}`);
             return;
