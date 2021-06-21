@@ -18,7 +18,7 @@ const supervisor = core.getInput('supervisor') == 'true'
         ? false
         : core.getInput('supervisor').trim().split(/\s*\n\s*/).filter(svc => Boolean(svc))
     );
-const cacheKey = core.getInput('cache-key') || `${process.env.GITHUB_WORKFLOW}:/hab/cache/artifacts`;
+const cacheKey = core.getInput('cache-key') || `hab-artifacts-cache:${process.env.GITHUB_WORKFLOW}`;
 
 
 // run with error wrapper
