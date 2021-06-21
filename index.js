@@ -70,22 +70,6 @@ async function run() {
         }
 
 
-        // enable `hab pkg install` without sudo
-        try {
-            core.startGroup('Enabling sudoless hab');
-
-            core.info(`Changing /hab ownership`);
-            await exec(`sudo chown -R runner:docker /hab`);
-            await exec(`sudo chmod g+s /hab /hab/cache /hab/pkgs`);
-            await exec(`find /hab/pkgs/ -maxdepth 3 -type d -exec sudo chmod g+ws {} \;`);
-        } catch (err) {
-            core.setFailed(`Failed to enable sudoless hab: ${err.message}`);
-            return;
-        } finally {
-            core.endGroup();
-        }
-
-
         // verify installation (and initialize license)
         try {
             await exec('hab --version');
@@ -106,6 +90,20 @@ async function run() {
         } finally {
             core.endGroup();
         }
+    }
+
+
+    // ensure /hab/cache exists and has correct ownership/permissions before cache is restored
+    try {
+        core.startGroup('Updating cache ownership');
+        await exec(`sudo mkdir -p /hab/cache`);
+        await exec(`sudo chown -R runner:docker /hab/cache`);
+        await exec(`sudo chmod g+s /hab/cache`);
+    } catch (err) {
+        core.setFailed(`Failed to update cache ownership: ${err.message}`);
+        return;
+    } finally {
+        core.endGroup();
     }
 
 
@@ -149,7 +147,7 @@ async function run() {
     if (deps.length) {
         try {
             core.startGroup(`Installing deps: ${deps.join(' ')}`);
-            await exec('hab pkg install', deps, { env: habEnv });
+            await exec('sudo hab pkg install', deps, { env: habEnv });
         } catch (err) {
             core.setFailed(`Failed to install deps: ${err.message}`);
             return;
@@ -195,6 +193,18 @@ async function run() {
                 }
             }
         }
+    }
+
+    // ensure /hab/cache exists and has correct ownership/permissions before cache is restored
+    try {
+        core.startGroup('Enabling sudoless package installation...');
+        await exec(`sudo chown -R runner:docker /hab/pkgs`);
+        await exec(`find /hab/pkgs -maxdepth 3 -type d -exec sudo chmod g+ws {} \;`);
+    } catch (err) {
+        core.setFailed(`Failed to enable sudoless package installation: ${err.message}`);
+        return;
+    } finally {
+        core.endGroup();
     }
 }
 
