@@ -72,10 +72,19 @@ async function run() {
 
         // enable `hab pkg install` without sudo
         try {
-            core.startGroup('Enabling setuid and setgid for hab command');
+            core.startGroup('Enabling sudoless hab');
+
+            core.info(`Changing /hab ownership`);
+            await exec(`sudo chown -R runner:docker /hab`);
+            await exec(`mkdir /hab/cache`);
+            await exec(`sudo chmod g+s /hab /hab/cache /hab/pkgs`);
+            await exec(`find /hab/pkgs/ -maxdepth 3 -type d -exec sudo chmod g+s {} \;`);
+
+            core.info(`Enabling setuid and setgid for hab command`);
+            await exec('sudo chown root:root /usr/bin/hab');
             await exec('sudo chmod ug+s /usr/bin/hab');
         } catch (err) {
-            core.setFailed(`Failed to enable setuid and setgid for hab command: ${err.message}`);
+            core.setFailed(`Failed to enable sudoless hab: ${err.message}`);
             return;
         } finally {
             core.endGroup();
@@ -113,9 +122,7 @@ async function run() {
             core.startGroup(`Restoring package cache`);
 
             core.info(`Initializing runner-writable /hab/cache`);
-            await exec(`sudo mkdir -p /hab/cache/artifacts /hab/cache/src`);
-            await exec(`sudo chown runner:docker -R /hab/cache`);
-            await exec(`sudo chmod g+s /hab/cache`);
+            await exec(`mkdir -p /hab/cache/artifacts`);
 
             core.info(`Writing restore lock: ${RESTORE_LOCK_PATH}`);
             fs.writeFileSync(RESTORE_LOCK_PATH, '');
