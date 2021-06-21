@@ -197,7 +197,7 @@ async function run() {
 
     // ensure /hab/cache exists and has correct ownership/permissions before cache is restored
     try {
-        core.startGroup('Enabling sudoless package installation...');
+        core.startGroup('Enabling sudoless package installation');
         await exec(`sudo chown -R runner:docker /hab/pkgs`);
         await exec(`find /hab/pkgs -maxdepth 3 -type d -exec sudo chmod g+ws {} \;`);
     } catch (err) {
