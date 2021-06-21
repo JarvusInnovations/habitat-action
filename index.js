@@ -78,10 +78,6 @@ async function run() {
             await exec(`sudo chown -R runner:docker /hab`);
             await exec(`sudo chmod g+s /hab /hab/cache /hab/pkgs`);
             await exec(`find /hab/pkgs/ -maxdepth 3 -type d -exec sudo chmod g+ws {} \;`);
-
-            core.info(`Enabling setuid and setgid for hab command`);
-            await exec('sudo chown root:root /usr/bin/hab');
-            await exec('sudo chmod ug+s /usr/bin/hab');
         } catch (err) {
             core.setFailed(`Failed to enable sudoless hab: ${err.message}`);
             return;
