@@ -1,0 +1,38 @@
+name: Test Action
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test habitat-action
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - run: npm install
+
+      - name: Test habitat-action
+        uses: ./
+
+      - name: Verify bio command works
+        run: bio pkg install core/git
+
+      - name: Verify hab command works with core/git
+        run: hab pkg install core/git
+
+      - name: Verify hab command works with jarvus/hologit
+        run: hab pkg install jarvus/hologit
+
+      - name: Verify installations
+        run: |
+          echo "Checking installed packages:"
+          hab pkg list
+          echo ""
+          echo "Verifying core/git is installed:"
+          hab pkg path core/git
+          echo ""
+          echo "Verifying jarvus/hologit is installed:"
+          hab pkg path jarvus/hologit
